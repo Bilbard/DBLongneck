@@ -10,6 +10,8 @@ Intended as an easy alternative to SQL-like databases in small projects for thos
 
 Import the file as such, and initialize a database.
 
+You can also pass debug=True to enable debug printing of every step the library takes.
+
 ```python
 from dblongneck import Longneck
 
