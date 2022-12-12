@@ -1,6 +1,6 @@
 # DBLongneck
 
-A dead simple database for Python 3.
+A dead simple database for Python 3. Now with compression!
 
 A fancy way of formatting JSON files with memory consumption in mind. 
 
