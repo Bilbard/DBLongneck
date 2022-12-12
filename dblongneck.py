@@ -1,12 +1,4 @@
-#Copyright 2022 Logan W.
-
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
-
-#http://www.apache.org/licenses/LICENSE-2.0
-
-import sys, os, json
+import sys, os, json, zstd
 from datetime import datetime
 
 class Longneck:
@@ -31,16 +23,34 @@ class Longneck:
 				self.__Dir("/".join(dir.split("/")[:-1]))
 			except:
 				pass
-			dt=datetime.now().strftime("%d/%m/%Y")+"-"+datetime.now().strftime("%H:%M:%S")
-			self.__Write(dir, {"dbl":"DBLongneckFile", "dbld":dt, "ver":"1.0"})
+			self.__Write(dir, self.__DefaultHeader())
 
-	def Load(self ,dir):
+	def Load(self, dir):
 		if self.debug:
 			print("Loading ", os.path.join(self.rootdir, dir+".dbl"))
 		self.Check(dir)
-		with open(os.path.join(self.rootdir, dir+".dbl"), 'r') as file:
-			return json.loads(file.read())
+		with open(os.path.join(self.rootdir, dir+".dbl"), 'rb') as file:
+			return json.loads(self.__Decompress(file.read()).decode())
+	
+	def __Compress(self, data):
+		if self.debug:
+			print("Compressing data")
+		return zstd.compress(data,8)
 
+	def __Decompress(self, data):
+		if self.debug:
+			print("Decompressing data")
+		return zstd.decompress(data)
+	
+	def IsBlank(self, dir):
+		if list(os.path.join(self.rootdir, dir+".dbl"))==list(self._DefaultHeader):
+			return True
+		return False
+	
+	def __DefaultHeader(self):
+		dt=datetime.now().strftime("%d/%m/%Y")+"-"+datetime.now().strftime("%H:%M:%S")
+		return {"dbl":"DBLongneckFile", "dbld":dt, "ver":"1.1"}
+	
 	def __Dir(self, dir):
 		if self.debug:
 			print("Making Directory ", os.path.join(self.rootdir, dir))
@@ -49,14 +59,20 @@ class Longneck:
 	def __Write(self, dir, data):
 		if self.debug:
 			print("Writing ", os.path.join(self.rootdir, dir+".dbl"))
-		with open(os.path.join(self.rootdir, dir+".dbl"), 'w') as file:
-			print(json.dumps(data, indent=4), file=file)
+		with open(os.path.join(self.rootdir, dir+".dbl"), 'wb') as file:
+			c = str.encode(json.dumps(data, indent=4))
+			file.write(self.__Compress(c))
+
+	def GetLast(self, dir):
+		t=self.Load(dir)
+		t2=t[list(t)[-1]]
+		return t2
 
 	def Wipe(self, dir, delete=False):
 		if self.debug:
 			print("Wiping ", os.path.join(self.rootdir, dir+".dbl"))
 		if not delete:
 			self.Check(dir)
-			self.__Write(dir,"{}")
+			self.__Write(dir,self.__DefaultHeader())
 		else:
 			os.remove(os.path.join(self.rootdir, dir+".dbl"))
