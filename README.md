@@ -98,3 +98,38 @@ db.Wipe("foo")
 ```
 
 Should you pass True to delete, it will instead simply delete the file. The size of a blank dbl is negligible, but some clean freaks will like this method better.
+
+# IsBlank(Directory (STRING))
+
+Checks if the file in the database is "empty". 
+
+```python
+from dblongneck import Longneck
+
+db = Longneck("desired/path/for/db")
+
+db.Check("foo")
+
+print(db.IsEmpty("foo"))
+#This would return True
+```
+
+When a new file is created, it is always populated with the default header. This function accounts for this. Internally, it compares the list of keys against a generated one based off of the current header. Should you only modify any of the default keys, this will still return True.
+
+# GetLast(Directory (STRING))
+
+A niche usecase, but returns the last key entry in the file.
+
+```python
+from dblongneck import Longneck
+
+db = Longneck("desired/path/for/db")
+
+
+db.Update("foo", {"foo":"bar"})
+
+db.Update("foo", {"obamna":"SODA!!!"})
+
+db.GetLast("foo")
+#this would return "obamna" 
+```
